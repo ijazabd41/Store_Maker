@@ -20,6 +20,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	newsletterController := controllers.NewNewsletterController(db)
 	fileController := controllers.NewFileController(db)
 	exportController := controllers.NewExportController(db)
+	sqcController := controllers.NewSQCController(db) // Software Construction Concepts with REAL DB!
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
@@ -133,5 +134,16 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		admin.POST("/templates", templateController.CreateTemplate)
 		admin.PUT("/templates/:id", templateController.UpdateTemplate)
 		admin.DELETE("/templates/:id", templateController.DeleteTemplate)
+	}
+
+	// Software Construction Concepts routes (public for educational purposes)
+	sqc := v1.Group("/sqc")
+	{
+		sqc.POST("/query", sqcController.ExecuteQuery)       // Execute StoreQL query on REAL data
+		sqc.POST("/validate", sqcController.ValidateQuery)   // Validate query syntax
+		sqc.POST("/tokenize", sqcController.TokenizeQuery)   // Tokenize query (debugging)
+		sqc.GET("/grammar", sqcController.GetGrammar)        // Get BNF grammar
+		sqc.GET("/examples", sqcController.RunExamples)      // Run examples
+		sqc.GET("/docs", sqcController.GetDocumentation)     // Get documentation
 	}
 }
