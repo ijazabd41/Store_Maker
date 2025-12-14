@@ -289,6 +289,9 @@ export const api = {
   getStorePage: (storeSlug: string, pageSlug: string) => 
     apiClient.get(`/stores/${storeSlug}/pages/${pageSlug}`),
 
+  // Store Export
+  downloadStoreSource: (storeId: number) => apiClient.get(`/manage/stores/${storeId}/download`, { responseType: 'blob' }),
+
   // Admin API
   admin: {
     // Templates

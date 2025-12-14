@@ -19,6 +19,7 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	customizationController := controllers.NewCustomizationController(db)
 	newsletterController := controllers.NewNewsletterController(db)
 	fileController := controllers.NewFileController(db)
+	exportController := controllers.NewExportController(db)
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
@@ -112,6 +113,9 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 			// Store newsletter
 			storeRoutes.GET("/:id/newsletter/subscriptions", newsletterController.GetSubscriptions)
 			storeRoutes.DELETE("/:id/newsletter/subscriptions/:subscriptionId", newsletterController.DeleteSubscription)
+
+			// Store export
+			storeRoutes.GET("/:id/download", exportController.DownloadStoreSource)
 		}
 	}
 

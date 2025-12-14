@@ -18,6 +18,7 @@ export default function StoreManagePage() {
   
   const [store, setStore] = useState<Store | null>(null)
   const [isLoadingStore, setIsLoadingStore] = useState(true)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -63,6 +64,43 @@ export default function StoreManagePage() {
     } catch (error) {
       console.error('Failed to deactivate store:', error)
       toast.error('Failed to deactivate store')
+    }
+  }
+
+  const handleDownloadSource = async () => {
+    if (!store) return
+    
+    try {
+      setIsDownloading(true)
+      toast.loading('Preparing download...')
+      
+      const response = await api.downloadStoreSource(parseInt(storeId))
+      
+      // Create blob from response
+      const blob = new Blob([response.data as BlobPart], { type: 'application/zip' })
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${store.slug}-store-source-${new Date().toISOString().split('T')[0]}.zip`
+      
+      // Trigger download
+      document.body.appendChild(link)
+      link.click()
+      
+      // Cleanup
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      toast.dismiss()
+      toast.success('Store source code downloaded successfully!')
+    } catch (error) {
+      console.error('Failed to download store source:', error)
+      toast.dismiss()
+      toast.error('Failed to download store source code')
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -152,9 +190,18 @@ export default function StoreManagePage() {
         {/* Store Info */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2">
-            <div className="card p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Store Information</h2>
-              <div className="space-y-4">
+            <div className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-dark-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-dark-700/50 shadow-elegant">
+              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-primary-500 via-secondary-500 to-primary-600 opacity-10"></div>
+              <div className="relative p-6">
+                <div className="flex items-center mb-6">
+                  <div className="p-2 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl mr-3">
+                    <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Store Information</h2>
+                </div>
+                <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   {store.logo ? (
                     <img src={store.logo} alt="Logo" className="h-12 w-12 rounded object-contain bg-white border" />
@@ -239,63 +286,167 @@ export default function StoreManagePage() {
                     {new Date(store.created_at).toLocaleDateString()}
                   </p>
                 </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="card p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <Link
-                  href={`/dashboard/stores/${store.id}/builder`}
-                  className="w-full btn-primary text-center sm:text-left flex items-center justify-center sm:justify-start"
-                  title="Design your store's home page layout and components"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
-                  <span className="hidden sm:inline">Design Home Page</span>
-                  <span className="sm:hidden">Design Home</span>
-                </Link>
-                <button className="w-full btn-secondary text-center sm:text-left">
-                  <span className="hidden sm:inline">Edit Store Settings</span>
-                  <span className="sm:hidden">Settings</span>
-                </button>
-                <button className="w-full btn-secondary text-center sm:text-left">
-                  <span className="hidden sm:inline">Manage Products</span>
-                  <span className="sm:hidden">Products</span>
-                </button>
-                <button className="w-full btn-secondary text-center sm:text-left">
-                  <span className="hidden sm:inline">View Orders</span>
-                  <span className="sm:hidden">Orders</span>
-                </button>
-                <button className="w-full btn-secondary text-center sm:text-left">
-                  Analytics
-                </button>
+            <div className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-dark-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-dark-700/50 shadow-elegant">
+              <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-primary-500/10 to-secondary-500/10"></div>
+              <div className="relative p-6">
+                <div className="flex items-center mb-5">
+                  <div className="p-2 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg mr-2.5">
+                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Quick Actions</h3>
+                </div>
+                <div className="space-y-3">
+                  <Link
+                    href={`/dashboard/stores/${store.id}/builder`}
+                    className="group w-full flex items-center justify-between px-4 py-3.5 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white rounded-xl shadow-md hover:shadow-lg hover:shadow-primary-500/50 transition-all duration-300"
+                    title="Design your store's home page layout and components"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                      </svg>
+                      <span className="font-semibold">Design Home Page</span>
+                    </div>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  
+                  <Link
+                    href={`/dashboard/stores/${store.id}/pages`}
+                    className="group w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-dark-800 dark:hover:bg-dark-700 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                    title="Manage your store pages and content"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="font-medium">Manage Pages</span>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+
+                  <button 
+                    onClick={handleDownloadSource}
+                    disabled={isDownloading}
+                    className="group w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+                    title="Download complete store source code as ZIP"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span className="font-semibold">{isDownloading ? 'Downloading...' : 'Download Source Code'}</span>
+                    </div>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  
+                  <Link
+                    href={`/dashboard/stores/${store.id}/products`}
+                    className="group w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-dark-800 dark:hover:bg-dark-700 text-gray-900 dark:text-white rounded-xl transition-all duration-200"
+                    title="Add, edit, and manage your store products"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <span className="font-medium">Manage Products</span>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                  
+                  <Link
+                    href={`/dashboard/stores/${store.id}/orders`}
+                    className="group w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-dark-800 border-2 border-gray-200 dark:border-dark-700 hover:border-primary-500 dark:hover:border-primary-500 text-gray-900 dark:text-white rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                    title="View and manage customer orders"
+                  >
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <span className="font-medium">View Orders</span>
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
               </div>
             </div>
 
             {/* Stats Overview */}
-            <div className="card p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-4">Store Stats</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 text-sm">Total Products</span>
-                  <span className="font-semibold">0</span>
+            <div className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-dark-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-dark-700/50 shadow-elegant">
+              <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-success-500/10 to-primary-500/10"></div>
+              <div className="relative p-6">
+                <div className="flex items-center mb-5">
+                  <div className="p-2 bg-gradient-to-br from-success-500 to-primary-500 rounded-lg mr-2.5">
+                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Store Stats</h3>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 text-sm">Total Orders</span>
-                  <span className="font-semibold">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 text-sm">Revenue</span>
-                  <span className="font-semibold">$0.00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 text-sm">Visitors</span>
-                  <span className="font-semibold">0</span>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-primary-500 rounded-lg mr-3">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Products</span>
+                    </div>
+                    <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">0</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-success-50 to-primary-50 dark:from-success-900/20 dark:to-primary-900/20 rounded-xl">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-success-500 rounded-lg mr-3">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Orders</span>
+                    </div>
+                    <span className="text-2xl font-bold text-success-600 dark:text-success-400">0</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 rounded-xl">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-secondary-500 rounded-lg mr-3">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Revenue</span>
+                    </div>
+                    <span className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">$0.00</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-gradient-to-r from-accent-50 to-primary-50 dark:from-accent-900/20 dark:to-primary-900/20 rounded-xl">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-accent-500 rounded-lg mr-3">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Visitors</span>
+                    </div>
+                    <span className="text-2xl font-bold text-accent-600 dark:text-accent-400">0</span>
+                  </div>
                 </div>
               </div>
             </div>

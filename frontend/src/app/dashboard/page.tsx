@@ -8,7 +8,7 @@ import { Store } from '@/types'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { StoreCard } from '@/components/dashboard/store-card'
 import { CreateStoreModal } from '@/components/dashboard/create-store-modal'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
@@ -113,56 +113,112 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="card p-4 sm:p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-primary-100 dark:bg-primary-900 rounded-lg flex-shrink-0">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-primary-600 rounded"></div>
+        {/* Stats Overview with Gradient Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
+          {/* Total Stores Card */}
+          <div className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20"></div>
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <BuildingStorefrontIcon className="h-7 w-7 text-white" />
+                </div>
+                <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white">
+                  All
+                </div>
               </div>
-              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Stores</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">{Array.isArray(stores) ? stores.length : 0}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="card p-4 sm:p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg flex-shrink-0">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-green-600 rounded"></div>
-              </div>
-              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Active Stores</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                  {Array.isArray(stores) ? stores.filter(store => store.status === 'active').length : 0}
-                </p>
+              <p className="text-white/80 text-sm font-medium mb-1">Total Stores</p>
+              <p className="text-4xl font-bold text-white">{Array.isArray(stores) ? stores.length : 0}</p>
+              <div className="mt-4 flex items-center text-white/70 text-xs">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Your online businesses
               </div>
             </div>
           </div>
           
-          <div className="card p-4 sm:p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex-shrink-0">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-600 rounded"></div>
+          {/* Active Stores Card */}
+          <div className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-success-500 to-success-700 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20"></div>
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white flex items-center">
+                  <span className="w-2 h-2 rounded-full bg-white mr-1.5 animate-pulse"></span>
+                  Live
+                </div>
               </div>
-              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Draft Stores</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                  {Array.isArray(stores) ? stores.filter(store => store.status === 'draft').length : 0}
-                </p>
+              <p className="text-white/80 text-sm font-medium mb-1">Active Stores</p>
+              <p className="text-4xl font-bold text-white">
+                {Array.isArray(stores) ? stores.filter(store => store.status === 'active').length : 0}
+              </p>
+              <div className="mt-4 flex items-center text-white/70 text-xs">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Publicly accessible
               </div>
             </div>
           </div>
           
-          <div className="card p-4 sm:p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg flex-shrink-0">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-purple-600 rounded"></div>
+          {/* Draft Stores Card */}
+          <div className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-500 to-accent-700 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20"></div>
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white">
+                  Draft
+                </div>
               </div>
-              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This Month</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100">$0</p>
+              <p className="text-white/80 text-sm font-medium mb-1">Draft Stores</p>
+              <p className="text-4xl font-bold text-white">
+                {Array.isArray(stores) ? stores.filter(store => store.status === 'draft').length : 0}
+              </p>
+              <div className="mt-4 flex items-center text-white/70 text-xs">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                In development
+              </div>
+            </div>
+          </div>
+          
+          {/* Revenue Card */}
+          <div className="group relative overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary-500 to-secondary-700 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20"></div>
+            <div className="relative p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white">
+                  Month
+                </div>
+              </div>
+              <p className="text-white/80 text-sm font-medium mb-1">This Month</p>
+              <p className="text-4xl font-bold text-white">$0</p>
+              <div className="mt-4 flex items-center text-white/70 text-xs">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Total earnings
               </div>
             </div>
           </div>

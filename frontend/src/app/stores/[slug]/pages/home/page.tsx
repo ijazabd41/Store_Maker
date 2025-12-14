@@ -37,7 +37,7 @@ export default function StoreHomePage() {
 
       // Try to load saved home page layout using public endpoint
       try {
-        const layoutResponse = await api.getPublicStoreLayout(slug)
+        const layoutResponse = await api.getPublicPageLayout(slug, 'home')
         const layoutData = layoutResponse.data as {
           components: PageComponent[]
           theme: ThemeConfig
@@ -900,6 +900,572 @@ export default function StoreHomePage() {
             />
           </div>
         )
+
+      case 'product-grid': {
+        const selectedIds = Array.isArray(component.props.selectedProducts) ? (component.props.selectedProducts as number[]) : []
+        const gridProducts: Product[] = selectedIds.length > 0
+          ? products.filter(p => selectedIds.includes(p.id as number))
+          : products
+
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-12"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'Featured Products')}
+              </h2>
+              {gridProducts.length === 0 ? (
+                <div className="text-center text-gray-500">No products available</div>
+              ) : (
+                <div className={`${
+                  Number(component.props.columns) === 4 ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6' :
+                  Number(component.props.columns) === 3 ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' :
+                  Number(component.props.columns) === 2 ? 'grid grid-cols-1 sm:grid-cols-2 gap-6' : 'grid grid-cols-1 gap-6'
+                }`}>
+                  {gridProducts.map((p) => (
+                    <div key={p.id} className="group border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                      <div className="aspect-square overflow-hidden">
+                        {p.images && p.images[0] ? (
+                          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 dark:bg-gray-700" />
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 
+                          className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors"
+                          style={{ color: primaryColor, fontFamily: headingFont }}
+                        >
+                          {p.name}
+                        </h3>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg font-bold" style={{ color: accentColor }}>{`$${p.price.toFixed(2)}`}</span>
+                            {(p as any).compare_price && (p as any).compare_price > p.price && (
+                              <span className="text-sm text-gray-500 line-through">{`$${(p as any).compare_price.toFixed(2)}`}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors hover:opacity-90"
+                            style={{ backgroundColor: accentColor }}
+                            onClick={() => addToCart({
+                              id: p.id as number,
+                              name: p.name,
+                              price: p.price,
+                              comparePrice: (p as any).compare_price,
+                              image: p.images?.[0] || '',
+                              slug: p.slug || '',
+                              storeSlug: slug
+                            })}
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )
+      }
+
+      case 'product-categories':
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-12"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'Shop by Category')}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {(Array.isArray(component.props.categories) ? component.props.categories : []).slice(0, 8).map((category: any, i: number) => (
+                  <div key={i} className="group cursor-pointer">
+                    <div className="aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow mb-4">
+                      {category.image && category.image.toString().trim() ? (
+                        <img 
+                          src={String(category.image)} 
+                          alt={String(category.name || 'Category')}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"%3E%3Crect width="300" height="300" fill="%23f3f4f6"/%3E%3Ctext x="150" y="150" text-anchor="middle" fill="%236b7280" font-size="14"%3E' + String(category.name || 'Category') + '%3C/text%3E%3C/svg%3E'
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                          <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <h3 
+                      className="text-lg font-semibold text-center"
+                      style={{ color: primaryColor, fontFamily: headingFont }}
+                    >
+                      {String(category.name || 'Category')}
+                    </h3>
+                    {category.itemCount && (
+                      <p className="text-sm text-center text-gray-500 mt-1">
+                        {String(category.itemCount)} items
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'reviews-grid':
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-12"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'Customer Reviews')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {(Array.isArray(component.props.reviews) ? component.props.reviews : []).slice(0, 6).map((review: any, i: number) => (
+                  <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center mb-4">
+                      {Array(5).fill(0).map((_, starIndex) => (
+                        <svg 
+                          key={starIndex} 
+                          className={`h-5 w-5 ${starIndex < (review.rating || 5) ? 'text-yellow-400' : 'text-gray-300'}`} 
+                          fill="currentColor" 
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <p className="mb-4" style={{ color: baseStyles.color }}>
+                      &ldquo;{String(review.comment || 'Great product and excellent service!')}&rdquo;
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                          <span className="text-gray-600 font-semibold">
+                            {String(review.name || 'Customer').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-semibold" style={{ color: primaryColor }}>
+                            {String(review.name || 'Customer')}
+                          </div>
+                          {review.date && (
+                            <div className="text-sm text-gray-500">
+                              {String(review.date)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'social-proof':
+        return (
+          <section key={component.id} className="py-16" style={{ backgroundColor: theme?.colors?.secondary || '#f8fafc' }}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-4"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'As Featured In')}
+              </h2>
+              {component.props.subtitle && (
+                <p className="text-center mb-12 text-lg" style={{ color: baseStyles.color }}>
+                  {String(component.props.subtitle)}
+                </p>
+              )}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
+                {(Array.isArray(component.props.logos) ? component.props.logos : []).slice(0, 6).map((logo: any, i: number) => (
+                  <div key={i} className="flex items-center justify-center">
+                    {logo.url && logo.url.trim() ? (
+                      <img 
+                        src={logo.url} 
+                        alt={String(logo.name || 'Partner')}
+                        className="h-12 opacity-60 hover:opacity-100 transition-opacity"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <div className="h-12 w-24 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <span className="text-gray-500 text-sm font-medium">
+                          {String(logo.name || 'Partner')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {(!Array.isArray(component.props.logos) || component.props.logos.length === 0) && (
+                  <>
+                    <div className="flex items-center justify-center">
+                      <div className="h-12 w-24 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <span className="text-gray-500 text-sm font-medium">TechCrunch</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className="h-12 w-24 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <span className="text-gray-500 text-sm font-medium">Forbes</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className="h-12 w-24 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <span className="text-gray-500 text-sm font-medium">Wired</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className="h-12 w-24 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <span className="text-gray-500 text-sm font-medium">The Verge</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'icon-grid':
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-12"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'Why Choose Us')}
+              </h2>
+              <div 
+                className={`grid gap-8 ${
+                  Number(component.props.columns) === 4 ? 'grid-cols-2 md:grid-cols-4' :
+                  Number(component.props.columns) === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                }`}
+              >
+                {(Array.isArray(component.props.features) ? component.props.features : []).slice(0, 8).map((feature: any, i: number) => (
+                  <div key={i} className="text-center">
+                    <div 
+                      className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl"
+                      style={{ backgroundColor: theme?.colors?.secondary || '#f8fafc' }}
+                    >
+                      {feature.icon === 'truck' && '🚚'}
+                      {feature.icon === 'shield' && '🛡️'}
+                      {feature.icon === 'return' && '↩️'}
+                      {feature.icon === 'support' && '💬'}
+                      {feature.icon === 'star' && '⭐'}
+                      {feature.icon === 'heart' && '❤️'}
+                      {feature.icon === 'check' && '✅'}
+                      {feature.icon === 'gift' && '🎁'}
+                      {!['truck', 'shield', 'return', 'support', 'star', 'heart', 'check', 'gift'].includes(feature.icon) && '✨'}
+                    </div>
+                    <h3 
+                      className="text-xl font-semibold mb-2"
+                      style={{ color: primaryColor, fontFamily: headingFont }}
+                    >
+                      {String(feature.title || 'Feature')}
+                    </h3>
+                    <p style={{ color: baseStyles.color }}>
+                      {String(feature.description || 'Feature description')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'before-after':
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-12"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'See the Difference')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="text-center">
+                  <h3 
+                    className="text-xl font-semibold mb-4"
+                    style={{ color: primaryColor, fontFamily: headingFont }}
+                  >
+                    {String(component.props.beforeLabel || 'Before')}
+                  </h3>
+                  <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+                    {component.props.beforeImage && component.props.beforeImage.toString().trim() ? (
+                      <img 
+                        src={String(component.props.beforeImage)} 
+                        alt="Before"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%236b7280" font-size="16"%3EBefore%3C/text%3E%3C/svg%3E'
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                        <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <h3 
+                    className="text-xl font-semibold mb-4"
+                    style={{ color: primaryColor, fontFamily: headingFont }}
+                  >
+                    {String(component.props.afterLabel || 'After')}
+                  </h3>
+                  <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+                    {component.props.afterImage && component.props.afterImage.toString().trim() ? (
+                      <img 
+                        src={String(component.props.afterImage)} 
+                        alt="After"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23f3f4f6"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%236b7280" font-size="16"%3EAfter%3C/text%3E%3C/svg%3E'
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                        <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'image-text':
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${
+                component.props.imagePosition === 'right' ? 'lg:grid-flow-col-dense' : ''
+              }`}>
+                <div className={`order-1 ${component.props.imagePosition === 'right' ? 'lg:order-2' : ''}`}>
+                  {component.props.image && component.props.image.toString().trim() ? (
+                    <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+                      <img 
+                        src={String(component.props.image)} 
+                        alt="Content"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"%3E%3Crect width="600" height="400" fill="%23f3f4f6"/%3E%3Ctext x="300" y="200" text-anchor="middle" fill="%236b7280" font-size="16"%3EContent Image%3C/text%3E%3C/svg%3E'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                      <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className={`order-2 ${component.props.imagePosition === 'right' ? 'lg:order-1' : ''}`}>
+                  <h2 
+                    className="text-3xl font-bold mb-6"
+                    style={{ color: primaryColor, fontFamily: headingFont }}
+                  >
+                    {String(component.props.title || 'Our Story')}
+                  </h2>
+                  <div 
+                    className="prose prose-lg max-w-none mb-6"
+                    style={{ color: baseStyles.color }}
+                  >
+                    <p className="text-lg leading-relaxed">
+                      {String(component.props.content || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.')}
+                    </p>
+                  </div>
+                  {component.props.showButton && (
+                    <Link
+                      href={`/stores/${slug}/pages/home`}
+                      className="inline-block px-6 py-3 rounded-lg font-semibold text-lg transition-colors hover:opacity-90"
+                      style={{ 
+                        backgroundColor: primaryColor,
+                        color: '#ffffff'
+                      }}
+                    >
+                      {String(component.props.buttonText || 'Read More')}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'stats-counter':
+        return (
+          <section key={component.id} className="py-16" style={{ backgroundColor: theme?.colors?.secondary || '#f8fafc' }}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 
+                className="text-3xl font-bold text-center mb-12"
+                style={{ color: primaryColor, fontFamily: headingFont }}
+              >
+                {String(component.props.title || 'Our Numbers Speak')}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {(Array.isArray(component.props.stats) ? component.props.stats : []).slice(0, 4).map((stat: any, i: number) => (
+                  <div key={i} className="text-center">
+                    <div 
+                      className="text-4xl md:text-5xl font-bold mb-2"
+                      style={{ color: primaryColor, fontFamily: headingFont }}
+                    >
+                      {String(stat.number || '0')}
+                    </div>
+                    <div 
+                      className="text-lg"
+                      style={{ color: baseStyles.color }}
+                    >
+                      {String(stat.label || 'Statistic')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'hero-split':
+        return (
+          <section key={component.id} className="min-h-80 md:min-h-96 lg:min-h-[500px]" style={baseStyles}>
+            <div className="max-w-7xl mx-auto px-6 py-12">
+              <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full ${
+                component.props.imagePosition === 'right' ? '' : 'lg:grid-cols-2'
+              }`}>
+                <div className={`${component.props.imagePosition === 'right' ? 'order-1' : 'order-2 lg:order-1'}`}>
+                  <h1 
+                    className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+                    style={{ color: primaryColor, fontFamily: headingFont }}
+                  >
+                    {String(component.props.title || 'New Collection')}
+                  </h1>
+                  <p 
+                    className="text-lg md:text-xl mb-8 leading-relaxed"
+                    style={{ color: baseStyles.color }}
+                  >
+                    {String(component.props.subtitle || 'Explore our latest arrivals')}
+                  </p>
+                  <Link
+                    href={`/stores/${slug}/pages/home`}
+                    className="inline-block px-8 py-4 rounded-lg font-semibold text-lg text-white transition-all hover:scale-105 shadow-lg"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    {String(component.props.buttonText || 'View Collection')}
+                  </Link>
+                </div>
+                <div className={`${component.props.imagePosition === 'right' ? 'order-2' : 'order-1 lg:order-2'}`}>
+                  <div 
+                    className="aspect-square lg:aspect-[4/3] rounded-2xl bg-cover bg-center bg-no-repeat shadow-2xl"
+                    style={{
+                      backgroundImage: component.props.image && component.props.image.toString().trim() ? `url(${component.props.image})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      backgroundColor: accentColor
+                    }}
+                  >
+                    {(!component.props.image || !component.props.image.toString().trim()) && (
+                      <div className="w-full h-full flex items-center justify-center text-white">
+                        <div className="text-center">
+                          <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+                            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <p className="text-sm">Hero Image</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'product-showcase': {
+        const featuredId = (component.props as any).featuredProduct as number | undefined
+        const showcaseProduct: Product | undefined = featuredId
+          ? products.find(p => (p.id as number) === featuredId)
+          : products[0]
+
+        if (!showcaseProduct) {
+          return (
+            <section key={component.id} className="py-16" style={baseStyles}>
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500">
+                No products available
+              </div>
+            </section>
+          )
+        }
+
+        return (
+          <section key={component.id} className="py-16" style={baseStyles}>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div className="aspect-square rounded-lg overflow-hidden shadow-lg">
+                  {showcaseProduct.images && showcaseProduct.images[0] ? (
+                    <img src={showcaseProduct.images[0]} alt={showcaseProduct.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold mb-4" style={{ color: primaryColor, fontFamily: headingFont }}>
+                    {showcaseProduct.name}
+                  </h2>
+                  <div className="flex items-center space-x-4 mb-6">
+                    <span className="text-2xl font-bold" style={{ color: accentColor }}>{`$${showcaseProduct.price.toFixed(2)}`}</span>
+                    {(showcaseProduct as any).compare_price && (showcaseProduct as any).compare_price > showcaseProduct.price && (
+                      <span className="text-lg line-through text-gray-500">{`$${(showcaseProduct as any).compare_price.toFixed(2)}`}</span>
+                    )}
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      className="px-6 py-3 rounded-lg font-semibold text-white transition-colors hover:opacity-90"
+                      style={{ backgroundColor: accentColor }}
+                      onClick={() => addToCart({
+                        id: showcaseProduct.id as number,
+                        name: showcaseProduct.name,
+                        price: showcaseProduct.price,
+                        comparePrice: (showcaseProduct as any).compare_price,
+                        image: showcaseProduct.images?.[0] || '',
+                        slug: showcaseProduct.slug || '',
+                        storeSlug: slug
+                      })}
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )
+      }
 
       default:
         return (
