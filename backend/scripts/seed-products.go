@@ -10,7 +10,7 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.LoadConfig()
-
+//seeding products
 	// Connect to database
 	db, err := database.Initialize(cfg.DatabaseURL)
 	if err != nil {
