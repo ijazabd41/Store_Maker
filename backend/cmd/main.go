@@ -51,9 +51,12 @@ func main() {
 	// Setup routes
 	routes.SetupRoutes(router, db)
 
+<<<<<<< HEAD
+=======
 	// Serve uploaded static files
 	router.Static("/uploads", "./uploads")
 
+>>>>>>> url/main
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

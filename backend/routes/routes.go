@@ -18,9 +18,12 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	orderController := controllers.NewOrderController(db)
 	customizationController := controllers.NewCustomizationController(db)
 	newsletterController := controllers.NewNewsletterController(db)
+<<<<<<< HEAD
+=======
 	fileController := controllers.NewFileController(db)
 	exportController := controllers.NewExportController(db)
 	sqcController := controllers.NewSQCController(db) // Software Construction Concepts with REAL DB!
+>>>>>>> url/main
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
@@ -42,7 +45,10 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		public.GET("/stores/:slug/layout", customizationController.GetPublicStoreLayout)
 		public.GET("/stores/:slug/pages", customizationController.GetPublicStorePages)
 		public.GET("/stores/:slug/pages/:pageSlug", customizationController.GetPublicStorePage)
+<<<<<<< HEAD
+=======
 		public.GET("/stores/:slug/pages/:pageSlug/layout", customizationController.GetPublicPageLayout)
+>>>>>>> url/main
 		public.GET("/stores/:slug/products", productController.GetStoreProducts)
 		public.GET("/stores/:slug/products/:productSlug", productController.GetStoreProduct)
 
@@ -75,10 +81,13 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 			storeRoutes.PUT("/:id", storeController.UpdateStore)
 			storeRoutes.DELETE("/:id", storeController.DeleteStore)
 
+<<<<<<< HEAD
+=======
 			// File upload routes (logo & favicon)
 			storeRoutes.POST("/:id/logo", fileController.UploadStoreLogo)
 			storeRoutes.POST("/:id/favicon", fileController.UploadStoreFavicon)
 
+>>>>>>> url/main
 			// Store settings
 			storeRoutes.GET("/:id/settings", customizationController.GetStoreSettings)
 			storeRoutes.PUT("/:id/settings", customizationController.UpdateStoreSettings)
@@ -97,10 +106,13 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 			storeRoutes.PUT("/:id/pages/:pageId", customizationController.UpdatePage)
 			storeRoutes.DELETE("/:id/pages/:pageId", customizationController.DeletePage)
 
+<<<<<<< HEAD
+=======
 			// Page layouts
 			storeRoutes.GET("/:id/pages/:pageId/layout", customizationController.GetPageLayout)
 			storeRoutes.POST("/:id/pages/:pageId/layout", customizationController.SavePageLayout)
 
+>>>>>>> url/main
 			// Store products
 			storeRoutes.GET("/:id/products", productController.GetProducts)
 			storeRoutes.POST("/:id/products", productController.CreateProduct)
@@ -114,9 +126,12 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 			// Store newsletter
 			storeRoutes.GET("/:id/newsletter/subscriptions", newsletterController.GetSubscriptions)
 			storeRoutes.DELETE("/:id/newsletter/subscriptions/:subscriptionId", newsletterController.DeleteSubscription)
+<<<<<<< HEAD
+=======
 
 			// Store export
 			storeRoutes.GET("/:id/download", exportController.DownloadStoreSource)
+>>>>>>> url/main
 		}
 	}
 
@@ -135,6 +150,8 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		admin.PUT("/templates/:id", templateController.UpdateTemplate)
 		admin.DELETE("/templates/:id", templateController.DeleteTemplate)
 	}
+<<<<<<< HEAD
+=======
 
 	// Software Construction Concepts routes (public for educational purposes)
 	sqc := v1.Group("/sqc")
@@ -146,4 +163,5 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 		sqc.GET("/examples", sqcController.RunExamples)      // Run examples
 		sqc.GET("/docs", sqcController.GetDocumentation)     // Get documentation
 	}
+>>>>>>> url/main
 }

@@ -190,10 +190,69 @@ func (ctrl *StoreController) CreateStore(c *gin.Context) {
 		}
 
 		// Copy components from template (new structure from admin panel)
+<<<<<<< HEAD
+		if componentsConfig, ok := template.Config["components"].([]interface{}); ok {
+			fmt.Printf("Found %d components in template\n", len(componentsConfig))
+			// Create a default home page for the store
+			homePage := models.Page{
+				StoreID:     store.ID,
+				Title:       "Home",
+				Slug:        "home",
+				Type:        models.PageTypeHome,
+				IsPublished: true,
+			}
+			if err := ctrl.db.Create(&homePage).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create home page"})
+				return
+			}
+
+			// Create a main section for components
+			mainSection := models.Section{
+				PageID:    homePage.ID,
+				Name:      "Main Content",
+				Type:      models.SectionTypeText,
+				Order:     0,
+				IsVisible: true,
+			}
+			if err := ctrl.db.Create(&mainSection).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create main section"})
+				return
+			}
+
+			// Copy components from template
+			for _, compRaw := range componentsConfig {
+				compMap, ok := compRaw.(map[string]interface{})
+				if !ok {
+					continue
+				}
+
+				component := models.Component{
+					SectionID: mainSection.ID,
+					Name:      getString(compMap, "id"), // Use id as name
+					Type:      models.ComponentType(getString(compMap, "type")),
+					Order:     getInt(compMap, "order"),
+					IsVisible: true,
+				}
+
+				// Copy component props as config
+				if props, ok := compMap["props"].(map[string]interface{}); ok {
+					configBytes, _ := json.Marshal(props)
+					var compConfig models.ComponentConfig
+					_ = json.Unmarshal(configBytes, &compConfig)
+					component.Config = compConfig
+				}
+
+				if err := ctrl.db.Create(&component).Error; err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to copy template component"})
+					return
+				}
+			}
+=======
 		// Note: Template components are now stored directly in the store layout
 		// and will be loaded via the store layout API, not as a separate home page
 		if componentsConfig, ok := template.Config["components"].([]interface{}); ok {
 			fmt.Printf("Found %d components in template - these will be loaded via store layout\n", len(componentsConfig))
+>>>>>>> url/main
 		}
 
 		// Copy pages (if template.Config has pages info) - legacy structure
@@ -301,7 +360,11 @@ func (ctrl *StoreController) GetStoreBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 
 	var store models.Store
+<<<<<<< HEAD
+	if err := ctrl.db.Where("slug = ? AND status = ?", slug, models.StoreStatusActive).First(&store).Error; err != nil {
+=======
 	if err := ctrl.db.Where("slug = ? AND status IN (?, ?)", slug, models.StoreStatusActive, models.StoreStatusDraft).First(&store).Error; err != nil {
+>>>>>>> url/main
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
 		} else {
@@ -611,10 +674,64 @@ func (ctrl *StoreController) CreateStoreWithAI(c *gin.Context) {
 	}
 
 	// Create AI-generated components
+<<<<<<< HEAD
+	if aiConfig.Components != nil {
+		// Create a default home page
+		homePage := models.Page{
+			StoreID:     store.ID,
+			Title:       "Home",
+			Slug:        "home",
+			Content:     "Welcome to our store",
+			Type:        models.PageTypeHome,
+			IsPublished: true,
+		}
+		if err := ctrl.db.Create(&homePage).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create home page"})
+			return
+		}
+
+		// Create a main section for components
+		mainSection := models.Section{
+			PageID:    homePage.ID,
+			Name:      "Main Content",
+			Type:      models.SectionTypeText,
+			Order:     0,
+			IsVisible: true,
+		}
+		if err := ctrl.db.Create(&mainSection).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create main section"})
+			return
+		}
+
+		// Create components from AI config
+		for _, compConfig := range aiConfig.Components {
+			component := models.Component{
+				SectionID: mainSection.ID,
+				Name:      compConfig.ID, // Use ID as name
+				Type:      models.ComponentType(compConfig.Type),
+				Order:     compConfig.Order,
+				IsVisible: true,
+			}
+
+			// Convert props to config
+			if compConfig.Props != nil {
+				configBytes, _ := json.Marshal(compConfig.Props)
+				var compConfigData models.ComponentConfig
+				_ = json.Unmarshal(configBytes, &compConfigData)
+				component.Config = compConfigData
+			}
+
+			if err := ctrl.db.Create(&component).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create AI component"})
+				return
+			}
+		}
+=======
 	// Note: AI-generated components are now stored directly in the store layout
 	// and will be loaded via the store layout API, not as a separate home page
 	if aiConfig.Components != nil {
 		fmt.Printf("Found %d AI-generated components - these will be loaded via store layout\n", len(aiConfig.Components))
+>>>>>>> url/main
 	}
 
 	c.JSON(http.StatusCreated, gin.H{

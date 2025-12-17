@@ -30,7 +30,11 @@ func (ctrl *ProductController) GetStoreProducts(c *gin.Context) {
 	}
 
 	var products []models.Product
+<<<<<<< HEAD
+	query := ctrl.db.Where("store_id = ? AND status = ?", store.ID, models.ProductStatusActive)
+=======
 	query := ctrl.db.Where("store_id = ? AND status IN (?, ?)", store.ID, models.ProductStatusActive, models.ProductStatusDraft)
+>>>>>>> url/main
 
 	// Pagination
 	page := 1
@@ -63,7 +67,11 @@ func (ctrl *ProductController) GetStoreProduct(c *gin.Context) {
 	}
 
 	var product models.Product
+<<<<<<< HEAD
+	if err := ctrl.db.Where("store_id = ? AND slug = ? AND status = ?", store.ID, productSlug, models.ProductStatusActive).First(&product).Error; err != nil {
+=======
 	if err := ctrl.db.Where("store_id = ? AND slug = ? AND status IN (?, ?)", store.ID, productSlug, models.ProductStatusActive, models.ProductStatusDraft).First(&product).Error; err != nil {
+>>>>>>> url/main
 		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
