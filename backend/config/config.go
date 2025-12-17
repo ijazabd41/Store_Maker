@@ -3,7 +3,11 @@ package config
 import (
 	"os"
 )
+<<<<<<< HEAD
 
+=======
+// config struct
+>>>>>>> url/main
 type Config struct {
 	DatabaseURL  string
 	JWTSecret    string

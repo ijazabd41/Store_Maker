@@ -9,7 +9,11 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
+<<<<<<< HEAD
 
+=======
+// initialize database
+>>>>>>> url/main
 func Initialize(databaseURL string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -39,6 +43,11 @@ func RunMigrations(db *gorm.DB) error {
 		&models.Section{},
 		&models.Component{},
 		&models.NewsletterSubscription{},
+<<<<<<< HEAD
+=======
+		&models.StoreLayout{},
+		&models.StoreLayoutComponent{},
+>>>>>>> url/main
 	)
 
 	if err != nil {

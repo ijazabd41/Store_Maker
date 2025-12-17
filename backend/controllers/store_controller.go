@@ -190,6 +190,7 @@ func (ctrl *StoreController) CreateStore(c *gin.Context) {
 		}
 
 		// Copy components from template (new structure from admin panel)
+<<<<<<< HEAD
 		if componentsConfig, ok := template.Config["components"].([]interface{}); ok {
 			fmt.Printf("Found %d components in template\n", len(componentsConfig))
 			// Create a default home page for the store
@@ -246,6 +247,12 @@ func (ctrl *StoreController) CreateStore(c *gin.Context) {
 					return
 				}
 			}
+=======
+		// Note: Template components are now stored directly in the store layout
+		// and will be loaded via the store layout API, not as a separate home page
+		if componentsConfig, ok := template.Config["components"].([]interface{}); ok {
+			fmt.Printf("Found %d components in template - these will be loaded via store layout\n", len(componentsConfig))
+>>>>>>> url/main
 		}
 
 		// Copy pages (if template.Config has pages info) - legacy structure
@@ -353,7 +360,11 @@ func (ctrl *StoreController) GetStoreBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 
 	var store models.Store
+<<<<<<< HEAD
 	if err := ctrl.db.Where("slug = ? AND status = ?", slug, models.StoreStatusActive).First(&store).Error; err != nil {
+=======
+	if err := ctrl.db.Where("slug = ? AND status IN (?, ?)", slug, models.StoreStatusActive, models.StoreStatusDraft).First(&store).Error; err != nil {
+>>>>>>> url/main
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
 		} else {
@@ -663,6 +674,7 @@ func (ctrl *StoreController) CreateStoreWithAI(c *gin.Context) {
 	}
 
 	// Create AI-generated components
+<<<<<<< HEAD
 	if aiConfig.Components != nil {
 		// Create a default home page
 		homePage := models.Page{
@@ -714,6 +726,12 @@ func (ctrl *StoreController) CreateStoreWithAI(c *gin.Context) {
 				return
 			}
 		}
+=======
+	// Note: AI-generated components are now stored directly in the store layout
+	// and will be loaded via the store layout API, not as a separate home page
+	if aiConfig.Components != nil {
+		fmt.Printf("Found %d AI-generated components - these will be loaded via store layout\n", len(aiConfig.Components))
+>>>>>>> url/main
 	}
 
 	c.JSON(http.StatusCreated, gin.H{

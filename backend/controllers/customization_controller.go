@@ -55,6 +55,7 @@ func (ctrl *CustomizationController) GetStoreLayout(c *gin.Context) {
 		return
 	}
 
+<<<<<<< HEAD
 	// Get home page for this store
 	var homePage models.Page
 	if err := ctrl.db.Where("store_id = ? AND type = ?", storeID, models.PageTypeHome).
@@ -91,6 +92,8 @@ func (ctrl *CustomizationController) GetStoreLayout(c *gin.Context) {
 		}
 	}
 
+=======
+>>>>>>> url/main
 	// Get store theme
 	var theme models.StoreTheme
 	if err := ctrl.db.Where("store_id = ?", storeID).First(&theme).Error; err != nil && err != gorm.ErrRecordNotFound {
@@ -98,6 +101,7 @@ func (ctrl *CustomizationController) GetStoreLayout(c *gin.Context) {
 		return
 	}
 
+<<<<<<< HEAD
 	// Convert sections/components to frontend format
 	var components []ComponentData
 	for _, section := range homePage.Sections {
@@ -108,6 +112,30 @@ func (ctrl *CustomizationController) GetStoreLayout(c *gin.Context) {
 				Props: component.Config,
 				Order: component.Order,
 			})
+=======
+	// Get store layout components
+	var storeLayout models.StoreLayout
+	var components []ComponentData
+
+	if err := ctrl.db.Preload("Components").Where("store_id = ?", storeID).First(&storeLayout).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// No layout saved yet, return empty components
+			components = []ComponentData{}
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch store layout"})
+			return
+		}
+	} else {
+		// Convert stored components to ComponentData format
+		for _, comp := range storeLayout.Components {
+			component := ComponentData{
+				ID:    strconv.FormatUint(uint64(comp.ID), 10),
+				Type:  comp.Type,
+				Props: comp.Props,
+				Order: comp.Order,
+			}
+			components = append(components, component)
+>>>>>>> url/main
 		}
 	}
 
@@ -123,9 +151,15 @@ func (ctrl *CustomizationController) GetStoreLayout(c *gin.Context) {
 func (ctrl *CustomizationController) GetPublicStoreLayout(c *gin.Context) {
 	storeSlug := c.Param("slug")
 
+<<<<<<< HEAD
 	// Get store by slug
 	var store models.Store
 	if err := ctrl.db.Where("slug = ? AND status = ?", storeSlug, models.StoreStatusActive).First(&store).Error; err != nil {
+=======
+	// Get store by slug (allow both active and draft for development)
+	var store models.Store
+	if err := ctrl.db.Where("slug = ? AND status IN (?, ?)", storeSlug, models.StoreStatusActive, models.StoreStatusDraft).First(&store).Error; err != nil {
+>>>>>>> url/main
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
 		} else {
@@ -134,6 +168,7 @@ func (ctrl *CustomizationController) GetPublicStoreLayout(c *gin.Context) {
 		return
 	}
 
+<<<<<<< HEAD
 	// Get home page for this store
 	var homePage models.Page
 	if err := ctrl.db.Where("store_id = ? AND type = ?", store.ID, models.PageTypeHome).
@@ -165,6 +200,8 @@ func (ctrl *CustomizationController) GetPublicStoreLayout(c *gin.Context) {
 		}
 	}
 
+=======
+>>>>>>> url/main
 	// Get store theme
 	var theme models.StoreTheme
 	if err := ctrl.db.Where("store_id = ?", store.ID).First(&theme).Error; err != nil && err != gorm.ErrRecordNotFound {
@@ -172,6 +209,7 @@ func (ctrl *CustomizationController) GetPublicStoreLayout(c *gin.Context) {
 		return
 	}
 
+<<<<<<< HEAD
 	// Convert sections/components to frontend format
 	var components []ComponentData
 	for _, section := range homePage.Sections {
@@ -182,6 +220,30 @@ func (ctrl *CustomizationController) GetPublicStoreLayout(c *gin.Context) {
 				Props: component.Config,
 				Order: component.Order,
 			})
+=======
+	// Get store layout components
+	var storeLayout models.StoreLayout
+	var components []ComponentData
+
+	if err := ctrl.db.Preload("Components").Where("store_id = ?", store.ID).First(&storeLayout).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// No layout saved yet, return empty components
+			components = []ComponentData{}
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch store layout"})
+			return
+		}
+	} else {
+		// Convert stored components to ComponentData format
+		for _, comp := range storeLayout.Components {
+			component := ComponentData{
+				ID:    strconv.FormatUint(uint64(comp.ID), 10),
+				Type:  comp.Type,
+				Props: comp.Props,
+				Order: comp.Order,
+			}
+			components = append(components, component)
+>>>>>>> url/main
 		}
 	}
 
@@ -214,6 +276,7 @@ func (ctrl *CustomizationController) SaveStoreLayout(c *gin.Context) {
 		}
 	}()
 
+<<<<<<< HEAD
 	// Get or create home page
 	var homePage models.Page
 	if err := tx.Where("store_id = ? AND type = ?", storeID, models.PageTypeHome).First(&homePage).Error; err != nil {
@@ -233,10 +296,30 @@ func (ctrl *CustomizationController) SaveStoreLayout(c *gin.Context) {
 		} else {
 			tx.Rollback()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch home page"})
+=======
+	// Save or update store layout
+	var existingLayout models.StoreLayout
+	if err := tx.Where("store_id = ?", storeID).First(&existingLayout).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Create new layout
+			layout := models.StoreLayout{
+				StoreID: uint(storeID),
+			}
+			if err := tx.Create(&layout).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create store layout"})
+				return
+			}
+			existingLayout = layout
+		} else {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch existing layout"})
+>>>>>>> url/main
 			return
 		}
 	}
 
+<<<<<<< HEAD
 	// Clear existing sections and components
 	if err := tx.Where("page_id = ?", homePage.ID).Delete(&models.Section{}).Error; err != nil {
 		tx.Rollback()
@@ -272,6 +355,29 @@ func (ctrl *CustomizationController) SaveStoreLayout(c *gin.Context) {
 			tx.Rollback()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create component"})
 			return
+=======
+	// Delete existing components
+	if err := tx.Where("store_layout_id = ?", existingLayout.ID).Delete(&models.StoreLayoutComponent{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete existing components"})
+		return
+	}
+
+	// Create new components
+	if req.Components != nil && len(req.Components) > 0 {
+		for _, comp := range req.Components {
+			component := models.StoreLayoutComponent{
+				StoreLayoutID: existingLayout.ID,
+				Type:          comp.Type,
+				Props:         comp.Props,
+				Order:         comp.Order,
+			}
+			if err := tx.Create(&component).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create component"})
+				return
+			}
+>>>>>>> url/main
 		}
 	}
 
@@ -597,3 +703,229 @@ func (ctrl *CustomizationController) UpdateStoreTheme(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Theme updated successfully"})
 }
+<<<<<<< HEAD
+=======
+
+// Page Layout Management
+type PageLayoutResponse struct {
+	Components []ComponentData    `json:"components"`
+	Theme      *models.StoreTheme `json:"theme"`
+}
+
+type PageLayoutRequest struct {
+	Components []ComponentData    `json:"components"`
+	Theme      *models.StoreTheme `json:"theme"`
+}
+
+// Get page layout by page ID
+func (ctrl *CustomizationController) GetPageLayout(c *gin.Context) {
+	pageID, err := strconv.ParseUint(c.Param("pageId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page ID"})
+		return
+	}
+
+	// Get page with sections and components
+	var page models.Page
+	if err := ctrl.db.Where("id = ?", pageID).Preload("Sections.Components").First(&page).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Page not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch page"})
+		}
+		return
+	}
+
+	// Get store theme
+	var theme models.StoreTheme
+	if err := ctrl.db.Where("store_id = ?", page.StoreID).First(&theme).Error; err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch store theme"})
+		return
+	}
+
+	// Convert sections/components to frontend format
+	var components []ComponentData
+	for _, section := range page.Sections {
+		for _, component := range section.Components {
+			components = append(components, ComponentData{
+				ID:    component.Name,
+				Type:  string(component.Type),
+				Props: component.Config,
+				Order: component.Order,
+			})
+		}
+	}
+
+	response := PageLayoutResponse{
+		Components: components,
+		Theme:      &theme,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// Save page layout by page ID
+func (ctrl *CustomizationController) SavePageLayout(c *gin.Context) {
+	pageID, err := strconv.ParseUint(c.Param("pageId"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page ID"})
+		return
+	}
+
+	var req PageLayoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get page to verify it exists and get store ID
+	var page models.Page
+	if err := ctrl.db.First(&page, pageID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Page not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch page"})
+		}
+		return
+	}
+
+	// Start transaction
+	tx := ctrl.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Clear existing sections and components for this page
+	if err := tx.Where("page_id = ?", pageID).Delete(&models.Section{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clear existing page layout"})
+		return
+	}
+
+	// Create new section for components
+	section := models.Section{
+		Name:      "Main Content",
+		Type:      models.SectionTypeText, // Generic type
+		PageID:    uint(pageID),
+		Order:     0,
+		IsVisible: true,
+	}
+	if err := tx.Create(&section).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create section"})
+		return
+	}
+
+	// Create components
+	for _, comp := range req.Components {
+		component := models.Component{
+			Name:      comp.ID,
+			Type:      models.ComponentType(comp.Type),
+			Config:    models.ComponentConfig(comp.Props),
+			Order:     comp.Order,
+			SectionID: section.ID,
+			IsVisible: true,
+		}
+		if err := tx.Create(&component).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create component"})
+			return
+		}
+	}
+
+	// Update theme if provided (only if it's for the store, not individual pages)
+	if req.Theme != nil {
+		var existingTheme models.StoreTheme
+		if err := tx.Where("store_id = ?", page.StoreID).First(&existingTheme).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				// Create new theme
+				req.Theme.StoreID = page.StoreID
+				if err := tx.Create(req.Theme).Error; err != nil {
+					tx.Rollback()
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create theme"})
+					return
+				}
+			} else {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch existing theme"})
+				return
+			}
+		} else {
+			// Update existing theme
+			req.Theme.ID = existingTheme.ID
+			req.Theme.StoreID = page.StoreID
+			if err := tx.Save(req.Theme).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update theme"})
+				return
+			}
+		}
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save page layout"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Page layout saved successfully"})
+}
+
+// Get public page layout by store slug and page slug
+func (ctrl *CustomizationController) GetPublicPageLayout(c *gin.Context) {
+	storeSlug := c.Param("slug")
+	pageSlug := c.Param("pageSlug")
+
+	// Get store by slug (allow both active and draft for development)
+	var store models.Store
+	if err := ctrl.db.Where("slug = ? AND status IN (?, ?)", storeSlug, models.StoreStatusActive, models.StoreStatusDraft).First(&store).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch store"})
+		}
+		return
+	}
+
+	// Get page by slug
+	var page models.Page
+	if err := ctrl.db.Where("store_id = ? AND slug = ? AND is_published = ?", store.ID, pageSlug, true).
+		Preload("Sections.Components").First(&page).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Page not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch page"})
+		}
+		return
+	}
+
+	// Get store theme
+	var theme models.StoreTheme
+	if err := ctrl.db.Where("store_id = ?", store.ID).First(&theme).Error; err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch store theme"})
+		return
+	}
+
+	// Convert sections/components to frontend format
+	var components []ComponentData
+	for _, section := range page.Sections {
+		for _, component := range section.Components {
+			components = append(components, ComponentData{
+				ID:    component.Name,
+				Type:  string(component.Type),
+				Props: component.Config,
+				Order: component.Order,
+			})
+		}
+	}
+
+	response := PageLayoutResponse{
+		Components: components,
+		Theme:      &theme,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+>>>>>>> url/main
