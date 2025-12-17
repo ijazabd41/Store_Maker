@@ -13,7 +13,7 @@ const (
 	RoleMerchant UserRole = "merchant"
 	RoleCustomer UserRole = "customer"
 )
-
+// user model
 type User struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	Email     string         `json:"email" gorm:"uniqueIndex;not null"`
